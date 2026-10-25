@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Worker Dashboard – Service Marketplace{% endblock %}
+{% block content %}
+
+<div class="dashboard-layout">
+    <aside class="sidebar">
+        <div class="sidebar-user">
+            <div class="sidebar-avatar worker">{{ session.name[0] }}</div>
+            <div>
+                <div class="sidebar-name">{{ session.name }}</div>
+                <div class="sidebar-role worker">Worker</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('worker_dashboard') }}" class="sidebar-link active">⊞ Dashboard</a>
+            <a href="{{ url_for('worker_bookings') }}" class="sidebar-link">📋 Requests</a>
+            <a href="{{ url_for('worker_edit_profile') }}" class="sidebar-link">👤 My Profile</a>
+            <a href="{{ url_for('logout') }}" class="sidebar-link logout">← Logout</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dash-header">
+            <h1>Hello, <span class="accent">{{ session.name.split()[0] }}</span> 👋</h1>
+            <a href="{{ url_for('worker_bookings', status='pending') }}" class="btn-primary-sm">View Pending Requests</a>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="stat-box-icon">📦</div>
+                <div class="stat-box-num">{{ total }}</div>
+                <div class="stat-box-label">Total Requests</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-box-icon">⏳</div>
+                <div class="stat-box-num">{{ pending }}</div>
+                <div class="stat-box-label">Pending</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-box-icon">✅</div>
+                <div class="stat-box-num">{{ completed }}</div>
+                <div class="stat-box-label">Completed</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-box-icon">💰</div>
+                <div class="stat-box-num">₹{{ "%.0f"|format(revenue) }}</div>
+                <div class="stat-box-label">Total Earnings</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-box-icon">⭐</div>
+                <div class="stat-box-num">{{ avg_rating }}</div>
+                <div class="stat-box-label">Avg Rating</div>
+            </div>
+        </div>
+
+        <div class="dash-section">
+            <div class="dash-section-header">
+                <h2>Recent Requests</h2>
+                <a href="{{ url_for('worker_bookings') }}" class="link-all">View all →</a>
+            </div>
+            {% if recent_bookings %}
+            <div class="bookings-list">
+                {% for b in recent_bookings %}
+                <div class="booking-item">
+                    <div class="booking-avatar">{{ b.user_name[0] }}</div>
+                    <div class="booking-info">
+                        <div class="booking-worker">{{ b.user_name }}</div>
+                        <div class="booking-date">📅 {{ b.service_date }} at {{ b.service_time }}</div>
+                        <div class="booking-address">📍 {{ b.address[:60] }}{% if b.address|length > 60 %}...{% endif %}</div>
+                    </div>
+                    <div class="booking-right">
+                        <span class="status-badge status-{{ b.status }}">{{ b.status|title }}</span>
+                        <div class="booking-amount">₹{{ "%.0f"|format(b.total_amount) }}</div>
+                        {% if b.status == 'in_progress' %}
+                        <form method="POST" action="{{ url_for('complete_booking', booking_id=b.id) }}" class="otp-form">
+                            <input type="text" name="otp" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required placeholder="4-digit OTP">
+                            <button type="submit" class="btn-status complete">Verify &amp; Complete</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <h3>No requests yet</h3>
+                <p>Complete your profile to start getting bookings!</p>
+                <a href="{{ url_for('worker_edit_profile') }}" class="btn-primary-sm">Edit Profile</a>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}

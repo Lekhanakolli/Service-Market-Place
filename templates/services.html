@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Browse Services – Service Marketplace{% endblock %}
+{% block content %}
+
+<div class="services-page">
+    <div class="services-header">
+        <div class="container">
+            <h1>Browse <span class="accent">Services</span></h1>
+            <form action="{{ url_for('services') }}" method="GET" class="services-search-bar">
+                <input type="text" name="service_type" value="{{ service_type }}" placeholder="Search service type...">
+                <input type="text" name="location" value="{{ location }}" placeholder="Location / City">
+                <input type="text" name="pincode" value="{{ pincode }}" placeholder="Pincode">
+                {% if selected_category %}
+                <input type="hidden" name="category" value="{{ selected_category }}">
+                {% endif %}
+                <button type="submit">Search</button>
+                <a href="{{ url_for('services') }}" class="clear-filters">Reset</a>
+            </form>
+        </div>
+    </div>
+
+    <div class="services-layout container">
+        <aside class="services-sidebar">
+            <h3>Categories</h3>
+            <a href="{{ url_for('services') }}" class="cat-filter-link {% if not selected_category %}active{% endif %}">All Services</a>
+            {% for cat in categories %}
+            <a href="{{ url_for('services', category=cat.category) }}"
+               class="cat-filter-link {% if selected_category == cat.category %}active{% endif %}">
+                {{ cat.category }}
+            </a>
+            {% endfor %}
+        </aside>
+
+        <div class="services-results">
+            <div class="results-bar">
+                <span>{{ workers|length }} professionals found
+                {% if selected_category %} in <strong>{{ selected_category }}</strong>{% endif %}
+                {% if service_type %} for <strong>"{{ service_type }}"</strong>{% endif %}
+                {% if location %} in <strong>{{ location }}</strong>{% endif %}
+                {% if pincode %} at <strong>{{ pincode }}</strong>{% endif %}
+                </span>
+                {% if selected_category or service_type or location or pincode %}
+                <a href="{{ url_for('services') }}" class="clear-filters">✕ Clear filters</a>
+                {% endif %}
+            </div>
+
+            {% if workers %}
+            <div class="workers-grid">
+                {% for worker in workers %}
+                <div class="worker-card">
+                    <div class="worker-card-top">
+                        <div class="worker-avatar">{{ worker.name[0] }}</div>
+                        <div class="worker-info">
+                            <h3>{{ worker.name }}</h3>
+                            <span class="worker-category">{{ worker.category }}</span>
+                        </div>
+                        {% if worker.is_available %}
+                        <span class="avail-badge">Available</span>
+                        {% else %}
+                        <span class="avail-badge unavail">Busy</span>
+                        {% endif %}
+                    </div>
+                    <p class="worker-bio">{{ worker.bio[:100] }}{% if worker.bio and worker.bio|length > 100 %}...{% endif %}</p>
+                    <div class="skills-wrap">
+                        {% if worker.skills %}
+                        {% for skill in worker.skills.split(',')[:3] %}
+                        <span class="skill-tag">{{ skill.strip() }}</span>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="worker-meta">
+                        <div class="worker-rating">
+                            {% set r = worker.avg_rating|float if worker.avg_rating else 0 %}
+                            {% for i in range(5) %}
+                            <span class="star {% if i < r|int %}filled{% endif %}">★</span>
+                            {% endfor %}
+                            <span class="rating-count">({{ worker.total_reviews or 0 }})</span>
+                        </div>
+                        <div class="worker-rate">₹{{ worker.hourly_rate }}/hr</div>
+                    </div>
+                    <div class="worker-actions">
+                        <a href="{{ url_for('worker_profile', worker_id=worker.id) }}" class="btn-outline-sm">View Profile</a>
+                        <a href="{{ url_for('book_service', worker_id=worker.id) }}" class="btn-primary-sm">Book Now</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">🔍</div>
+                <h3>No professionals found</h3>
+                <p>Try a different search or category</p>
+                <a href="{{ url_for('services') }}" class="btn-primary-sm">View All</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}{{ worker.name }} – Service Marketplace{% endblock %}
+{% block content %}
+
+<div class="profile-page container">
+    <div class="profile-layout">
+        <div class="profile-left">
+            <div class="profile-card">
+                <div class="profile-avatar-lg">{{ worker.name[0] }}</div>
+                <h1 class="profile-name">{{ worker.name }}</h1>
+                <span class="worker-category large">{{ worker.category }}</span>
+                {% if worker.is_available %}
+                <div class="avail-badge large">✓ Available Now</div>
+                {% else %}
+                <div class="avail-badge unavail large">Currently Unavailable</div>
+                {% endif %}
+                <div class="profile-rate">₹{{ worker.hourly_rate }}<span>/hour</span></div>
+                <div class="profile-rating-big">
+                    {% set r = worker.avg_rating|float if worker.avg_rating else 0 %}
+                    {% for i in range(5) %}
+                    <span class="star {% if i < r|int %}filled{% endif %}">★</span>
+                    {% endfor %}
+                    <span class="rating-count">{{ "%.1f"|format(r) }} ({{ worker.total_reviews or 0 }} reviews)</span>
+                </div>
+                <div class="profile-contact">
+                    <div class="contact-item">📞 {{ worker.phone }}</div>
+                    <div class="contact-item">✉️ {{ worker.email }}</div>
+                </div>
+                <a href="{{ url_for('book_service', worker_id=worker.id) }}" class="btn-book-big">Book This Pro →</a>
+            </div>
+        </div>
+
+        <div class="profile-right">
+            <div class="profile-section">
+                <h2>About</h2>
+                <p>{{ worker.bio or 'No bio provided.' }}</p>
+            </div>
+
+            <div class="profile-section">
+                <h2>Skills & Expertise</h2>
+                <div class="skills-wrap large">
+                    {% if worker.skills %}
+                    {% for skill in worker.skills.split(',') %}
+                    <span class="skill-tag">{{ skill.strip() }}</span>
+                    {% endfor %}
+                    {% else %}
+                    <p>No skills listed.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h2>Customer Reviews ({{ reviews|length }})</h2>
+                {% if reviews %}
+                <div class="reviews-list">
+                    {% for review in reviews %}
+                    <div class="review-card">
+                        <div class="review-top">
+                            <div class="review-avatar">{{ review.user_name[0] }}</div>
+                            <div>
+                                <div class="review-user">{{ review.user_name }}</div>
+                                <div class="review-date">{{ review.created_at.strftime('%b %d, %Y') }}</div>
+                            </div>
+                            <div class="review-stars">
+                                {% for i in range(review.rating) %}<span class="star filled">★</span>{% endfor %}
+                            </div>
+                        </div>
+                        {% if review.review %}
+                        <p class="review-text">"{{ review.review }}"</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="muted">No reviews yet. Be the first to book!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

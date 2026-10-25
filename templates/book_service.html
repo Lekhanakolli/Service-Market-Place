@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Book {{ worker.name }} – Service Marketplace{% endblock %}
+{% block content %}
+
+<div class="booking-page container">
+    <div class="booking-layout">
+        <div class="booking-form-wrap">
+            <h1>Book a Service</h1>
+            <p class="booking-sub">Fill in the details to confirm your appointment</p>
+
+            <form method="POST" action="{{ url_for('book_service', worker_id=worker.id) }}" class="booking-form">
+                <div class="form-section">
+                    <h3>Schedule</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Service Date</label>
+                            <input type="date" name="service_date" required min="{{ today }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Preferred Time</label>
+                            <input type="time" name="service_time" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Duration (hours)</label>
+                        <select name="duration" id="duration-select" onchange="calcTotal()">
+                            <option value="1">1 hour</option>
+                            <option value="1.5">1.5 hours</option>
+                            <option value="2">2 hours</option>
+                            <option value="3">3 hours</option>
+                            <option value="4">4 hours</option>
+                            <option value="6">6 hours</option>
+                            <option value="8">8 hours (Full day)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Location</h3>
+                    <div class="form-group">
+                        <label>Service Address</label>
+                        <textarea name="address" required rows="2" placeholder="Full address where service is needed"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Additional Notes</h3>
+                    <div class="form-group">
+                        <label>Special Instructions (optional)</label>
+                        <textarea name="notes" rows="3" placeholder="Describe the problem or any specific requirements..."></textarea>
+                    </div>
+                </div>
+
+                <div class="booking-summary">
+                    <div class="summary-row">
+                        <span>Rate</span>
+                        <span>₹{{ worker.hourly_rate }}/hr</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Duration</span>
+                        <span id="summary-duration">1 hr</span>
+                    </div>
+                    <div class="summary-total">
+                        <span>Total</span>
+                        <span id="summary-total">₹{{ worker.hourly_rate }}</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-auth">Confirm Booking →</button>
+            </form>
+        </div>
+
+        <div class="booking-pro-card">
+            <h3>Your Professional</h3>
+            <div class="bpc-avatar">{{ worker.name[0] }}</div>
+            <h2 class="bpc-name">{{ worker.name }}</h2>
+            <span class="worker-category">{{ worker.category }}</span>
+            <div class="bpc-rate">₹{{ worker.hourly_rate }}/hr</div>
+            <div class="bpc-bio">{{ worker.bio[:120] }}{% if worker.bio|length > 120 %}...{% endif %}</div>
+            <a href="{{ url_for('worker_profile', worker_id=worker.id) }}" class="link-all">View full profile →</a>
+        </div>
+    </div>
+</div>
+
+<script>
+const rate = parseFloat("{{ worker.hourly_rate }}");
+function calcTotal() {
+    const dur = parseFloat(document.getElementById('duration-select').value);
+    document.getElementById('summary-duration', ).textContent = dur + ' hr' + (dur > 1 ? 's' : '');
+    document.getElementById('summary-total').textContent = '₹' + (rate * dur).toFixed(0);
+}
+// Set min date to today
+document.querySelector('input[type=date]').min = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}

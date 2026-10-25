@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}My Dashboard – Service Marketplace{% endblock %}
+{% block content %}
+
+<div class="dashboard-layout">
+    <aside class="sidebar">
+        <div class="sidebar-user">
+            <div class="sidebar-avatar">{{ session.name[0] }}</div>
+            <div>
+                <div class="sidebar-name">{{ session.name }}</div>
+                <div class="sidebar-role user">Customer</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('user_dashboard') }}" class="sidebar-link active">⊞ Dashboard</a>
+            <a href="{{ url_for('user_bookings') }}" class="sidebar-link">📋 My Bookings</a>
+            <a href="{{ url_for('services') }}" class="sidebar-link">🔍 Browse Services</a>
+            <a href="{{ url_for('logout') }}" class="sidebar-link logout">← Logout</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dash-header">
+            <h1>Welcome back, <span class="accent">{{ session.name.split()[0] }}</span> 👋</h1>
+            <a href="{{ url_for('services') }}" class="btn-primary-sm">+ Book New Service</a>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="stat-box-icon">📦</div>
+                <div class="stat-box-num">{{ total }}</div>
+                <div class="stat-box-label">Total Bookings</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-box-icon">⏳</div>
+                <div class="stat-box-num">{{ pending }}</div>
+                <div class="stat-box-label">Pending</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-box-icon">✅</div>
+                <div class="stat-box-num">{{ completed }}</div>
+                <div class="stat-box-label">Completed</div>
+            </div>
+        </div>
+
+        <div class="dash-section">
+            <div class="dash-section-header">
+                <h2>Recent Bookings</h2>
+                <a href="{{ url_for('user_bookings') }}" class="link-all">View all →</a>
+            </div>
+            {% if recent_bookings %}
+            <div class="bookings-list">
+                {% for b in recent_bookings %}
+                <div class="booking-item">
+                    <div class="booking-avatar">{{ b.worker_name[0] }}</div>
+                    <div class="booking-info">
+                        <div class="booking-worker">{{ b.worker_name }}</div>
+                        <div class="booking-category">{{ b.category }}</div>
+                        <div class="booking-date">📅 {{ b.service_date }} at {{ b.service_time }}</div>
+                    </div>
+                    <div class="booking-right">
+                        <span class="status-badge status-{{ b.status }}">{{ b.status|title }}</span>
+                        <div class="booking-amount">₹{{ "%.0f"|format(b.total_amount) }}</div>
+                        {% if b.status == 'in_progress' %}
+                        <div class="otp-badge">
+                            <strong>{{ b.otp }}</strong>
+                            <span>Share this OTP with the service provider upon completion</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <h3>No bookings yet</h3>
+                <p>Browse services and book your first professional!</p>
+                <a href="{{ url_for('services') }}" class="btn-primary-sm">Browse Services</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="dash-section">
+            <div class="dash-section-header"><h2>Quick Search</h2></div>
+            <div class="quick-cats">
+                <a href="{{ url_for('services', category='Plumbing') }}" class="quick-cat">🔧 Plumbing</a>
+                <a href="{{ url_for('services', category='Electrical') }}" class="quick-cat">⚡ Electrical</a>
+                <a href="{{ url_for('services', category='Cleaning') }}" class="quick-cat">🧹 Cleaning</a>
+                <a href="{{ url_for('services', category='Carpentry') }}" class="quick-cat">🪵 Carpentry</a>
+                <a href="{{ url_for('services', category='Painting') }}" class="quick-cat">🎨 Painting</a>
+                <a href="{{ url_for('services', category='AC Repair') }}" class="quick-cat">❄️ AC Repair</a>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

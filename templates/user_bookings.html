@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}My Bookings – Service Marketplace{% endblock %}
+{% block content %}
+
+<div class="dashboard-layout">
+    <aside class="sidebar">
+        <div class="sidebar-user">
+            <div class="sidebar-avatar">{{ session.name[0] }}</div>
+            <div>
+                <div class="sidebar-name">{{ session.name }}</div>
+                <div class="sidebar-role user">Customer</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('user_dashboard') }}" class="sidebar-link">⊞ Dashboard</a>
+            <a href="{{ url_for('user_bookings') }}" class="sidebar-link active">📋 My Bookings</a>
+            <a href="{{ url_for('services') }}" class="sidebar-link">🔍 Browse Services</a>
+            <a href="{{ url_for('logout') }}" class="sidebar-link logout">← Logout</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dash-header">
+            <h1>My <span class="accent">Bookings</span></h1>
+            <a href="{{ url_for('services') }}" class="btn-primary-sm">+ New Booking</a>
+        </div>
+
+        {% if bookings %}
+        <div class="bookings-full-list">
+            {% for b in bookings %}
+            <div class="booking-card">
+                <div class="booking-card-header">
+                    <div class="booking-pro-info">
+                        <div class="booking-avatar large">{{ b.worker_name[0] }}</div>
+                        <div>
+                            <h3>{{ b.worker_name }}</h3>
+                            <span class="cat-tag">{{ b.category }}</span>
+                        </div>
+                    </div>
+                    <span class="status-badge status-{{ b.status }}">{{ b.status|title }}</span>
+                </div>
+                <div class="booking-card-body">
+                    <div class="booking-detail-grid">
+                        <div class="bd-item"><span class="bd-label">Date</span><span class="bd-val">{{ b.service_date }}</span></div>
+                        <div class="bd-item"><span class="bd-label">Time</span><span class="bd-val">{{ b.service_time }}</span></div>
+                        <div class="bd-item"><span class="bd-label">Duration</span><span class="bd-val">{{ b.duration }} hrs</span></div>
+                        <div class="bd-item"><span class="bd-label">Amount</span><span class="bd-val amount">₹{{ "%.0f"|format(b.total_amount) }}</span></div>
+                        <div class="bd-item full"><span class="bd-label">Address</span><span class="bd-val">{{ b.address }}</span></div>
+                        {% if b.notes %}
+                        <div class="bd-item full"><span class="bd-label">Notes</span><span class="bd-val">{{ b.notes }}</span></div>
+                        {% endif %}
+                        <div class="bd-item"><span class="bd-label">Worker Phone</span><span class="bd-val">{{ b.worker_phone }}</span></div>
+                    </div>
+                </div>
+
+                {% if b.status == 'completed' %}
+                <div class="booking-card-footer">
+                    {% if b.rating %}
+                    <div class="existing-rating">
+                        <strong>Your Rating:</strong>
+                        {% for i in range(b.rating) %}<span class="star filled">★</span>{% endfor %}
+                        {% if b.review %}<span class="review-text"> "{{ b.review }}"</span>{% endif %}
+                    </div>
+                    {% else %}
+                    <div class="rate-section">
+                        <strong>Rate this service:</strong>
+                        <form method="POST" action="{{ url_for('rate_booking', booking_id=b.id) }}" class="rate-form">
+                            <div class="star-picker" id="stars-{{ b.id }}">
+                                {% for i in range(1,6) %}
+                                <span class="star-pick" data-val="{{ i }}" onclick="pickStar('{{ b.id }}', '{{ i }}')">★</span>
+                                {% endfor %}
+                            </div>
+                            <input type="hidden" name="rating" id="rating-{{ b.id }}" required>
+                            <input type="text" name="review" placeholder="Write a review (optional)">
+                            <button type="submit" class="btn-primary-sm">Submit</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h3>No bookings yet</h3>
+            <p>Find a professional and book your first service!</p>
+            <a href="{{ url_for('services') }}" class="btn-primary-sm">Browse Services</a>
+        </div>
+        {% endif %}
+    </main>
+</div>
+
+<script>
+function pickStar(bookingId, val) {
+    const stars = document.querySelectorAll(`#stars-${bookingId} .star-pick`);
+    stars.forEach((s, i) => s.classList.toggle('active', i < val));
+    document.getElementById(`rating-${bookingId}`).value = val;
+}
+</script>
+{% endblock %}

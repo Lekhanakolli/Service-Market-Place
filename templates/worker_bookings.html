@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Manage Requests – Service Marketplace{% endblock %}
+{% block content %}
+
+<div class="dashboard-layout">
+    <aside class="sidebar">
+        <div class="sidebar-user">
+            <div class="sidebar-avatar worker">{{ session.name[0] }}</div>
+            <div>
+                <div class="sidebar-name">{{ session.name }}</div>
+                <div class="sidebar-role worker">Worker</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('worker_dashboard') }}" class="sidebar-link">⊞ Dashboard</a>
+            <a href="{{ url_for('worker_bookings') }}" class="sidebar-link active">📋 Requests</a>
+            <a href="{{ url_for('worker_edit_profile') }}" class="sidebar-link">👤 My Profile</a>
+            <a href="{{ url_for('logout') }}" class="sidebar-link logout">← Logout</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dash-header">
+            <h1>Service <span class="accent">Requests</span></h1>
+        </div>
+
+        <div class="filter-tabs">
+            <a href="{{ url_for('worker_bookings') }}" class="filter-tab {% if not status_filter %}active{% endif %}">All</a>
+            <a href="{{ url_for('worker_bookings', status='pending') }}" class="filter-tab {% if status_filter == 'pending' %}active{% endif %}">Pending</a>
+            <a href="{{ url_for('worker_bookings', status='confirmed') }}" class="filter-tab {% if status_filter == 'confirmed' %}active{% endif %}">Confirmed</a>
+            <a href="{{ url_for('worker_bookings', status='in_progress') }}" class="filter-tab {% if status_filter == 'in_progress' %}active{% endif %}">In Progress</a>
+            <a href="{{ url_for('worker_bookings', status='completed') }}" class="filter-tab {% if status_filter == 'completed' %}active{% endif %}">Completed</a>
+            <a href="{{ url_for('worker_bookings', status='cancelled') }}" class="filter-tab {% if status_filter == 'cancelled' %}active{% endif %}">Cancelled</a>
+        </div>
+
+        {% if bookings %}
+        <div class="bookings-full-list">
+            {% for b in bookings %}
+            <div class="booking-card">
+                <div class="booking-card-header">
+                    <div class="booking-pro-info">
+                        <div class="booking-avatar large">{{ b.user_name[0] }}</div>
+                        <div>
+                            <h3>{{ b.user_name }}</h3>
+                            <div class="contact-row">
+                                <span>📞 {{ b.user_phone }}</span>
+                                <span>✉️ {{ b.user_email }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="status-badge status-{{ b.status }}">{{ b.status|title }}</span>
+                </div>
+                <div class="booking-card-body">
+                    <div class="booking-detail-grid">
+                        <div class="bd-item"><span class="bd-label">Date</span><span class="bd-val">{{ b.service_date }}</span></div>
+                        <div class="bd-item"><span class="bd-label">Time</span><span class="bd-val">{{ b.service_time }}</span></div>
+                        <div class="bd-item"><span class="bd-label">Duration</span><span class="bd-val">{{ b.duration }} hrs</span></div>
+                        <div class="bd-item"><span class="bd-label">Amount</span><span class="bd-val amount">₹{{ "%.0f"|format(b.total_amount) }}</span></div>
+                        <div class="bd-item full"><span class="bd-label">Address</span><span class="bd-val">{{ b.address }}</span></div>
+                        {% if b.notes %}
+                        <div class="bd-item full"><span class="bd-label">Notes</span><span class="bd-val">{{ b.notes }}</span></div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if b.status not in ['completed', 'cancelled'] %}
+                <div class="booking-card-footer">
+                    <form method="POST" action="{{ url_for('update_booking_status', booking_id=b.id) }}" class="status-form">
+                        <span class="update-label">Update Status:</span>
+                        {% if b.status == 'pending' %}
+                        <button name="status" value="confirmed" class="btn-status confirm">✓ Confirm</button>
+                        <button name="status" value="cancelled" class="btn-status cancel">✕ Cancel</button>
+                        {% elif b.status == 'confirmed' %}
+                        <button name="status" value="in_progress" class="btn-status progress">▶ Start Work</button>
+                        <button name="status" value="cancelled" class="btn-status cancel">✕ Cancel</button>
+                        {% elif b.status == 'in_progress' %}
+                        <input type="text" name="otp" form="complete-booking-{{ b.id }}" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required placeholder="4-digit OTP">
+                        <button type="submit" form="complete-booking-{{ b.id }}" class="btn-status complete">Verify &amp; Complete</button>
+                        {% endif %}
+                    </form>
+                    {% if b.status == 'in_progress' %}
+                    <form id="complete-booking-{{ b.id }}" method="POST" action="{{ url_for('complete_booking', booking_id=b.id) }}"></form>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                {% if b.rating %}
+                <div class="booking-card-footer rating-footer">
+                    <strong>Customer Rating:</strong>
+                    {% for i in range(b.rating) %}<span class="star filled">★</span>{% endfor %}
+                    {% if b.review %}<span class="muted"> "{{ b.review }}"</span>{% endif %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h3>No requests found</h3>
+            <p>{% if status_filter %}No {{ status_filter }} requests.{% else %}You haven't received any bookings yet.{% endif %}</p>
+        </div>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}

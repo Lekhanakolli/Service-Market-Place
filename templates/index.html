@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}Service Marketplace – Find Trusted Service Professionals{% endblock %}
+{% block content %}
+
+<section class="hero">
+    <div class="hero-bg">
+        <div class="hero-orb hero-orb-1"></div>
+        <div class="hero-orb hero-orb-2"></div>
+    </div>
+    <div class="hero-content">
+        <div class="hero-tag">✦ Trusted by 10,000+ customers</div>
+        <h1 class="hero-title">
+            Find Expert<br>
+            <span class="hero-accent">Service Pros</span><br>
+            Near You
+        </h1>
+        <p class="hero-subtitle">Book verified professionals for plumbing, electrical, cleaning, carpentry & more. Fast. Reliable. Affordable.</p>
+        <form action="{{ url_for('services') }}" method="GET" class="hero-search">
+            <input type="text" name="search" placeholder="What service do you need?" class="hero-input">
+            <button type="submit" class="hero-btn">Search →</button>
+        </form>
+        <div class="hero-cats">
+            {% for cat in categories %}
+            <a href="{{ url_for('services', category=cat.category) }}" class="hero-cat-pill">{{ cat.category }}</a>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="hero-stats">
+        <div class="stat-card"><div class="stat-num">500+</div><div class="stat-label">Verified Pros</div></div>
+        <div class="stat-card"><div class="stat-num">15K+</div><div class="stat-label">Jobs Done</div></div>
+        <div class="stat-card"><div class="stat-num">4.8★</div><div class="stat-label">Avg Rating</div></div>
+    </div>
+</section>
+
+<section class="section-how">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">How It Works</div>
+            <h2>Book a pro in <span class="accent">3 easy steps</span></h2>
+        </div>
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-num">01</div>
+                <div class="step-icon">🔍</div>
+                <h3>Search & Browse</h3>
+                <p>Browse verified professionals by category, skills, or location. Read real reviews.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-num">02</div>
+                <div class="step-icon">📅</div>
+                <h3>Book a Slot</h3>
+                <p>Pick your preferred date and time. Fill in your address and service details.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-num">03</div>
+                <div class="step-icon">✅</div>
+                <h3>Get It Done</h3>
+                <p>Your pro arrives on time, completes the job, and you rate the experience.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-featured">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">Top Rated</div>
+            <h2>Featured <span class="accent">Professionals</span></h2>
+        </div>
+        <div class="workers-grid">
+            {% for worker in featured_workers %}
+            <div class="worker-card">
+                <div class="worker-card-top">
+                    <div class="worker-avatar">{{ worker.name[0] }}</div>
+                    <div class="worker-info">
+                        <h3>{{ worker.name }}</h3>
+                        <span class="worker-category">{{ worker.category }}</span>
+                    </div>
+                    {% if worker.is_available %}
+                    <span class="avail-badge">Available</span>
+                    {% endif %}
+                </div>
+                <p class="worker-bio">{{ worker.bio[:90] }}{% if worker.bio|length > 90 %}...{% endif %}</p>
+                <div class="worker-meta">
+                    <div class="worker-rating">
+                        {% set r = worker.avg_rating|float %}
+                        {% for i in range(5) %}
+                            <span class="star {% if i < r|int %}filled{% elif i < r %}half{% endif %}">★</span>
+                        {% endfor %}
+                        <span class="rating-count">({{ worker.total_bookings }})</span>
+                    </div>
+                    <div class="worker-rate">₹{{ worker.hourly_rate }}/hr</div>
+                </div>
+                <div class="worker-actions">
+                    <a href="{{ url_for('worker_profile', worker_id=worker.id) }}" class="btn-outline-sm">View Profile</a>
+                    <a href="{{ url_for('book_service', worker_id=worker.id) }}" class="btn-primary-sm">Book Now</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="section-cta">
+            <a href="{{ url_for('services') }}" class="btn-cta">View All Professionals →</a>
+        </div>
+    </div>
+</section>
+
+<section class="section-cta-band">
+    <div class="container">
+        <div class="cta-band">
+            <div class="cta-band-text">
+                <h2>Are you a skilled professional?</h2>
+                <p>Join thousands of workers earning through Service Marketplace. Set your own hours & rates.</p>
+            </div>
+            <a href="{{ url_for('register') }}" class="btn-cta-white">Join as a Worker →</a>
+        </div>
+    </div>
+</section>
+
+<!-- ✅ FEEDBACK SECTION -->
+<!-- ✅ MODERN FEEDBACK SECTION -->
+<section class="feedback-section">
+    <div class="container">
+        <h2 class="feedback-title">Give Your Feedback</h2>
+
+        <form id="feedbackForm">
+            <input type="text" id="name" placeholder="Your Name" required><br><br>
+            <textarea id="message" placeholder="Your Feedback" required></textarea><br><br>
+            <button type="submit">Submit</button>
+        </form>
+
+        <div id="feedbackList" class="feedback-grid"></div>
+    </div>
+</section>
+
+<script>
+document.getElementById("feedbackForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let name = document.getElementById("name").value;
+    let message = document.getElementById("message").value;
+
+    let card = document.createElement("div");
+    card.className = "feedback-card";
+
+    card.innerHTML = `<p>"${message}"</p><h4>- ${name}</h4>`;
+
+    document.getElementById("feedbackList").appendChild(card);
+
+    document.getElementById("feedbackForm").reset();
+});
+</script>
+
+{% endblock %}
